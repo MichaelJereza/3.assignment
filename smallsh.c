@@ -44,7 +44,7 @@ bool parseCommand(char** commandLine){
     args[0] = cmd;
     int size = 0;
     int returnStdout = dup(1);
-    int fOut = NULL;
+    int fOut = -1;
     // Parse commandLine into args array of parameters
     char* param = strtok(NULL, " ");
     while(param!=NULL){    
@@ -74,7 +74,7 @@ bool parseCommand(char** commandLine){
     // Return stdout to terminal
     dup2(returnStdout, 1);
     // If redirecting to output : then close
-    if(fOut!=NULL){
+    if(fOut!=-1){
         close(fOut);
     }
     free(args);
