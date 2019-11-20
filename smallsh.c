@@ -36,12 +36,6 @@ int executeCommand(char** arg){
     return commandPid;
 }
 
-// Opens file fOut
-// returns file descriptor
-int outputIO(char* fOut){
-    open(fOut, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
-}
-
 // Parses command line into argument array
 // Calls fork creation
 bool parseCommand(char** commandLine){
@@ -50,7 +44,7 @@ bool parseCommand(char** commandLine){
     args[0] = cmd;
     int size = 0;
     int returnStdout = dup(1);
-    int fOut;
+    int fOut = NULL;
     // Parse commandLine into args array of parameters
     char* param = strtok(NULL, " ");
     while(param!=NULL){    
@@ -79,9 +73,11 @@ bool parseCommand(char** commandLine){
     // Clean up
     // Return stdout to terminal
     dup2(returnStdout, 1);
-    close(fOut);
+    // If redirecting to output : then close
+    if(fOut!=NULL){
+        close(fOut);
+    }
     free(args);
-  //  return false;
 
     return true;
 }
@@ -151,6 +147,7 @@ void shellPrompt(){
     do{
         if(buffer != NULL){
           free(buffer);
+          buffer = NULL;
         }
         bufsize = 0;
         buflen = 0;
@@ -159,7 +156,7 @@ void shellPrompt(){
         fflush(stdin);
         buflen = getline(&buffer, &bufsize, stdin);
         if(buflen < 0){
-            printf("Error!\nBUFFER:%s \nBUFSIZE:%d \nBUFLEN:%d", buffer, bufsize, buflen);
+            printf("Error!\nBUFFER:%s \nBUFSIZE:%d \nBUFLEN:%d\n", buffer, bufsize, buflen);
             break;
         }
         // Remove \n
