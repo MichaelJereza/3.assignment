@@ -151,7 +151,6 @@ void shellPrompt(){
     do{
         if(buffer != NULL){
           free(buffer);
-          buffer = NULL;
         }
         bufsize = 0;
         buflen = 0;
@@ -160,7 +159,8 @@ void shellPrompt(){
         fflush(stdin);
         buflen = getline(&buffer, &bufsize, stdin);
         if(buflen < 0){
-            printf("Error\n");
+            printf("Error!\nBUFFER:%s \nBUFSIZE:%d \nBUFLEN:%d", buffer, bufsize, buflen);
+            break;
         }
         // Remove \n
         if(buflen > 0){
