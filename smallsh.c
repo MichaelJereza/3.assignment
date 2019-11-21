@@ -8,12 +8,12 @@
 #include <signal.h>
 
 struct status{
-    int mode; //0: exit | 1: signal
-    int result;     // exit status or signal
+    int mode;	// 0: exit | 1: signal
+    int result; // exit status or signal
 };
-struct bps{
-    int amt;
-    int* pid;
+struct bps{	// background processes
+    int amt;	// number of ps
+    int* pid;	// pids
 };
 char* SHELL_LOCATION;
 struct status lastTerm;
@@ -67,9 +67,8 @@ int executeCommand(char** arg, bool bg, int in, int out){
             printf("ERROR");
             exit(1);
             break;
+
         case 0:
-        
-            // HERE
             SIGINT_action.sa_handler = catchSigInt;
             sigaction(SIGINT, &SIGINT_action, NULL);
 
@@ -89,8 +88,8 @@ int executeCommand(char** arg, bool bg, int in, int out){
         default: 
             SIGINT_action.sa_handler = SIG_IGN;
             sigaction(SIGINT, &SIGINT_action, NULL);
-
-            //FIXME signals
+	    
+	    // Background 
             if(bg){
                 
                 BACKGROUND_Ps.pid = realloc(BACKGROUND_Ps.pid, (BACKGROUND_Ps.amt+1)*sizeof(int));
@@ -100,9 +99,8 @@ int executeCommand(char** arg, bool bg, int in, int out){
                 dup2(oldOut, 1);
                 printf("Background PID: %d\n", commandPid);
 
-                //waitpid(commandPid, &cExit, WNOHANG);
-                //printf("Hi\n");
             }
+	    // Foreground 
             else{
                 waitpid(commandPid, &cExit, 0);
                 lastTerm.mode = 0;
@@ -120,8 +118,6 @@ int executeCommand(char** arg, bool bg, int in, int out){
 // Parses command line into argument array
 // Calls fork creation
 bool parseCommand(char** commandLine){
-    //512 args
-    // 2048 input
     char* cmd = strtok(*commandLine, " ");
     char** args = malloc(sizeof(char*[512]));
     args[0] = malloc(2048*sizeof(char));
@@ -152,7 +148,6 @@ bool parseCommand(char** commandLine){
                 }
                 
                 fOut = open(param, O_CREAT | O_WRONLY | O_TRUNC, 0664 );
-                //dup2(fOut, 1);
                 if(fOut==-1){
                     // If can't be opened reprompt
                     printf("%s can't be accessed!\n", param);
@@ -217,8 +212,10 @@ bool parseCommand(char** commandLine){
         }
 
     }
-
+    // Stops artifacts in array
     args[size] = NULL;
+
+    // Execute command
     executeCommand(args, backgrounding, fIn, fOut);
 
   
@@ -231,7 +228,6 @@ bool parseCommand(char** commandLine){
         close(fIn);
     }
     // Free args
-    //                  !----- problem here -----!
     int i;
     for(i = 0; i < size+1; i++){
         args[i] = NULL;
@@ -318,7 +314,7 @@ bool doInput(char* input){
         return parseCommand(&input);
     }
 }
-
+// Continues to reprompt until doInput = false, caused by exit or error
 void shellPrompt(){
     char* buffer = NULL;
     size_t bufsize;
@@ -360,7 +356,6 @@ void shellPrompt(){
                 }
                 
                 BACKGROUND_Ps.amt--;
-                //free(temp);
             }
         }}while(removed == true);
         // Free buffer
@@ -385,9 +380,8 @@ void shellPrompt(){
         sigfillset(&prompt_signals.sa_mask);
         prompt_signals.sa_flags = 0;
 
-        // Prompt
+        // No kill in prompt
         prompt_signals.sa_handler = SIG_IGN;
-        //sigaction(SIGTSTP, &prompt_signals, NULL);
         sigaction(SIGINT, &prompt_signals, NULL);
         prompt_signals.sa_handler = catchSigTstp;
         sigaction(SIGTSTP, &prompt_signals, NULL);
@@ -402,15 +396,10 @@ void shellPrompt(){
             fflush(stdin);
         }while(buflen==-1);
 
-        if(buflen < 0){
-           // buffer = NULL;
-        }
         // Remove \n
         if(buflen > 0){
             if(buffer[buflen-1] == '\n'){
-                // Deallocate unnecessary memory for newline
                 // Replace newline with terminator
-               // buffer = realloc(buffer, sizeof(char[buflen-1]));
                 buffer[buflen-1] = '\0';
             }
         }
@@ -421,7 +410,7 @@ void shellPrompt(){
 }
 
 void main(){
-
+/*
     sigset_t handledSigs;
     sigemptyset(&handledSigs);
     sigaddset(&handledSigs, SIGINT); // kill fg only print signal
@@ -430,7 +419,7 @@ void main(){
     struct sigaction handled;
     handled.sa_handler;
     handled.sa_flags = SA_SIGINFO;
-
+*/
     lastTerm.mode = 0;
     lastTerm.result = 0;
     BACKGROUND_Ps.amt = 0;
