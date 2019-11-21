@@ -232,7 +232,8 @@ bool parseCommand(char** commandLine){
     }
     // Free args
     //                  !----- problem here -----!
-    for(int i = 0; i < size+1; i++){
+    int i;
+    for(i = 0; i < size+1; i++){
         args[i] = NULL;
         free(args[i]);
     }
@@ -297,7 +298,8 @@ bool doInput(char* input){
         return true;
     }
     else if(strcmp(input, "exit")==0){
-        for(int i = 0; i < BACKGROUND_Ps.amt; i++){
+        int i;
+        for(i = 0; i < BACKGROUND_Ps.amt; i++){
             kill(BACKGROUND_Ps.pid[i], 15);
             printf("Killed %d", BACKGROUND_Ps.pid[i]);
         }
@@ -328,7 +330,8 @@ void shellPrompt(){
         // Handle Background Processes
         bool removed = false;
         do{
-        for(int i = 0; i < BACKGROUND_Ps.amt; i++){
+        int i;
+        for(i = 0; i < BACKGROUND_Ps.amt; i++){
             int cExit = -5;
             waitpid(BACKGROUND_Ps.pid[i], &cExit, WNOHANG);
             if(cExit!=-5){
@@ -347,7 +350,8 @@ void shellPrompt(){
                 }
                 // Copy new array
                 int p = 0;    
-                for(int j = 0; j < BACKGROUND_Ps.amt-1; j++){
+                int j;
+                for(j = 0; j < BACKGROUND_Ps.amt-1; j++){
                     if(p==i){
                         p++;
                     }
